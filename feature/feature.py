@@ -29,10 +29,8 @@ class PSSM():
                 pssm.append(map(int, part.split('\t')))
         return uniprotURI, pssm
 
-
     def get_PSSM(self):
         return self.pssm
-    
 
     def get_uniprotURI(self):
         return self.uniprotURI
@@ -48,15 +46,12 @@ class PSSMData():
         self.pssms = {} 
         self.uniprotURIs = []
 
-
     def add_PSSMRecord(self, pssm_obj):
         self.uniprotURIs.append(pssm_obj.uniprotURI)
         self.pssms[pssm_obj.uniprotURI] = pssm_obj
 
-
     def get_PSSMRecord(self, uniprotURI):
         return self.pssms.get(uniprotURI)
-
 
     def get_uniprotURIs(self):
         return self.uniprotURIs
@@ -76,7 +71,6 @@ class BindingResidueData():
     def __init__(self, raw_bindres):
         self.uniprotURIs, self.bindRecords = self.parse_raw_bindres(raw_bindres)
 
-
     def parse_raw_bindres(self, raw_bindres):
         parts = raw_bindres.split('\n')
         uniprotURIs = []
@@ -93,13 +87,11 @@ class BindingResidueData():
             bindRecords[eles[0]] = set(buff)
         return uniprotURIs, bindRecords
 
-
     """
     return set([20, 56, 57, 21])
     """
     def get_bindres(self, uniprotURI):
         return self.bindRecords.get(uniprotURI)
-
 
     def get_uniprotURIs(self):
         return self.uniprotURIs
@@ -201,14 +193,3 @@ if __name__ == "__main__":
     print "negative_dataset"
     print negative_dataset
     """
-
-
-
-
-
-
-
-
-
-
-
