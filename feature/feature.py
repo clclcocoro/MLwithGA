@@ -126,7 +126,7 @@ def create_feature_vectors(pssm, window_size):
     for i in xrange(seqlen):
         feature_vector = []
         if i - window_size < 0:
-            feature_vector += [1 if i % 21 == 0 else 0 for i in xrange(20*(i-window_size))]
+            feature_vector += [1 if i % 21 == 0 else 0 for i in xrange(20*(window_size-i))]
             p = 0
         else:
             p = i - window_size
@@ -138,7 +138,7 @@ def create_feature_vectors(pssm, window_size):
             while p <= seqlen - 1:
                 feature_vector += m[p]
                 p += 1
-            feature_vector += [1 if i % 21 == 0 else 0 for i in xrange(20*(seqlen-i+window_size))]
+            feature_vector += [1 if i % 21 == 0 else 0 for i in xrange(20*((i+window_size)-(seqlen-1)))]
         feature_vectors.append(feature_vector)
     return feature_vectors
 
@@ -186,9 +186,7 @@ if __name__ == "__main__":
     window_size = 3
     positive_dataset, negative_dataset = create_dataset(bindingResidueData, pssmData, window_size)
     
-    """
     print "positive_dataset"
     print positive_dataset
     print "negative_dataset"
     print negative_dataset
-    """
