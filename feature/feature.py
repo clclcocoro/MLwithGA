@@ -89,7 +89,7 @@ class BindingResidueData():
     """
     return set([20, 56, 57, 21])
     """
-    def get_bindres(self, uniprotURI):
+    def get_bindRecord(self, uniprotURI):
         return self.bindRecords.get(uniprotURI)
 
     def get_uniprotURIs(self):
@@ -160,7 +160,7 @@ def create_dataset(bindingResidueData, pssmData, window_size):
     for uniprotURI in bindingResidueData.get_uniprotURIs():
         pssm = pssmData.get_PSSMRecord(uniprotURI)
         feature_vectors = create_feature_vectors(pssm, window_size)
-        bindRecord = bindingResidueData.get_bindres(uniprotURI)
+        bindRecord = bindingResidueData.get_bindRecord(uniprotURI)
         positive_data, negative_data = create_training_data(bindRecord, feature_vectors)
         positive_dataset += positive_data
         negative_dataset += negative_data
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     print "bindingResidueData"
     print bindingResidueData
     print bindingResidueData.get_uniprotURIs()
-    print bindingResidueData.get_bindres(bindingResidueData.get_uniprotURIs()[0])
+    print bindingResidueData.get_bindRecord(bindingResidueData.get_uniprotURIs()[0])
     print "pssmData"
     print pssmData
     print pssmData.get_uniprotURIs()
