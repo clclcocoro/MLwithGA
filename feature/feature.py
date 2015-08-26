@@ -19,7 +19,6 @@ class PSSM():
     def __init__(self, raw_pssm):
         self.uniprotURI, self.pssm = self.parse_raw_pssm(raw_pssm)
 
-
     def parse_raw_pssm(self, raw_pssm):
         parts = raw_pssm.split('\n')
         uniprotURI = parts[0][1:]
