@@ -1,0 +1,6 @@
+http://purl.uniprot.org/uniprot/P00861 384 161 151 303 155 391 154 153 392 152 385 383 389 390 304 156 158
+http://purl.uniprot.org/uniprot/P16932 308 80 303 304 306 307 77 78 79 305
+http://purl.uniprot.org/uniprot/P30289 124 64 67 68 117
+http://purl.uniprot.org/uniprot/P32173 20 56 57 21
+http://purl.uniprot.org/uniprot/Q9S0X0 1032 1039 1031 1038 1033 1040 1037
+http://purl.uniprot.org/uniprot/Q9Y3D8 58 59 143 83 139 138 137
