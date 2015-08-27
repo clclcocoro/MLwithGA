@@ -3,7 +3,7 @@
 import re
 
 
-class PSSM():
+class PSSM(object):
 
     """
     PSSM object created from followng string
@@ -35,7 +35,7 @@ class PSSM():
         return self.uniprotURI
 
 
-class PSSMData():
+class PSSMData(object):
 
     """
     PSSMData object is dictionary of PSSM object
@@ -56,7 +56,7 @@ class PSSMData():
         return self.uniprotURIs
 
 
-class BindingResidueData():
+class BindingResidueData(object):
 
     """
     BindingResidue object created from followng string
