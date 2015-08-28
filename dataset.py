@@ -25,18 +25,18 @@ class FoldedDataset(object):
                 positive_dataset = positive_dataset[:2*negative_size]
         self.positive_size = len(positive_dataset)
         self.negative_size = len(negative_dataset)
-        self.folded_positive_dataset = self.folding(positive_size, positive_dataset, fold)
-        self.folded_negative_dataset = self.folding(negative_size, negative_dataset, fold)
+        self.folded_positive_dataset = self.folding(self.positive_size, positive_dataset, fold)
+        self.folded_negative_dataset = self.folding(self.negative_size, negative_dataset, fold)
 
     def folding(self, size, dataset, fold):
         p = size / fold
         r = size % fold
         if r == 0:
-            folded_dataset = [dataset[i:p*(i+1)] for i in xrange(fold)]
+            folded_dataset = [dataset[p*i:p*(i+1)] for i in xrange(fold)]
         else:
-            folded_dataset = [dataset[i:p*(i+1)] for i in xrange(fold)]
+            folded_dataset = [dataset[p*i:p*(i+1)] for i in xrange(fold)]
             for i in xrange(r):
-                folded_dataset[i] += [dataset[5*p+i]]
+                folded_dataset[i] += [dataset[fold*p+i]]
         return folded_dataset
 
     def get_folded_positive_dataset(self):
@@ -52,9 +52,8 @@ class FoldedDataset(object):
         return self.original_negative_dataset
 
     def get_test_and_training_dataset(self, test_fold):
-        if test_fold <= 0 or self.fold < test_fold:
-            raise ValueError("test_fold [{}] must be in self.fold [{}]".format(test_fold, self.fold))
-        test_fold -= 1 # Convert to list index
+        if test_fold < 0 or self.fold <= test_fold:
+            raise ValueError("test_fold [{}] must be between 0 and self.fold-1 [{}]".format(test_fold, self.fold-1))
         test_positive_size = len(self.folded_positive_dataset[test_fold])
         test_negative_size = len(self.folded_negative_dataset[test_fold])
         test_labels = [1] * test_positive_size + [0] * test_negative_size
