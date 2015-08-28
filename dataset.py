@@ -7,8 +7,8 @@ import copy
 class FoldedDataset(object):
 
     def __init__(self, positive_dataset, negative_dataset, fold=5, undersampling=True, shuffle=True):
-        self.original_positive_dataset = copy.copy(positive_dataset)
-        self.original_negative_dataset = copy.copy(negative_dataset)
+        self.original_positive_dataset = copy.deepcopy(positive_dataset)
+        self.original_negative_dataset = copy.deepcopy(negative_dataset)
         self.fold = fold
         positive_size = len(positive_dataset)
         negative_size = len(negative_dataset)
@@ -57,11 +57,11 @@ class FoldedDataset(object):
         test_fold -= 1 # Convert to list index
         test_positive_size = len(self.folded_positive_dataset[test_fold])
         test_negative_size = len(self.folded_negative_dataset[test_fold])
-        test_label = [1] * test_positive_size + [0] * test_negative_size
+        test_labels = [1] * test_positive_size + [0] * test_negative_size
         test_dataset = self.folded_positive_dataset[test_fold] + self.folded_negative_dataset[test_fold]
-        train_label = [1] * (self.positive_size - test_positive_size) + [0] * (self.negative_size - test_negative_size)
+        train_labels = [1] * (self.positive_size - test_positive_size) + [0] * (self.negative_size - test_negative_size)
         train_dataset = []
         for i in xrange(self.fold):
             if i != test_fold:
                 train_dataset += self.folded_positive_dataset[i]+self.folded_negative_dataset[i]
-        return test_label, test_dataset, train_label, train_dataset
+        return test_labels, test_dataset, train_labels, train_dataset
