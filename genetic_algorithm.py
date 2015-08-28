@@ -26,13 +26,10 @@ from docopt import docopt
 import cross_validation
 
 
-def run_ga(method, cross_validation, rangemin=0, rangemax=10):
+def run_ga(cross_validation, rangemin=0, rangemax=10):
     genome = G1DList.G1DList(3)
     genome.setParams(rangemin=rangemin, rangemax=rangemax)
-    if cross_validation.method == "neuralNetwork":
-        genome.evaluator.set(cross_validation.neuralNetwork_eval_func)
-    elif cross_validation.method == "randomForest":
-        genome.evaluator.set(cross_validation.randomForest_eval_func)
+    genome.evaluator.set(cross_validation.eval_func)
     ga = GSimpleGA.GSimpleGA(genome)
     ga.selector.set(Selectors.GRouletteWheel)
     ga.setGenerations(3)
@@ -59,4 +56,4 @@ if __name__ == "__main__":
         elif crossValidation.method == "randomForest":
             fp.write("#method\tn_estimators\tmax_features\twindow_size\n")
         gene1, gene2, gene3 = cross_validation.decode_chromosome(best_chromosome)
-        fp.write("{}\t{}\t{}\t{}".format(method, gene1, gene2, gene3))
+        fp.write("{}\t{}\t{}\t{}".format(crossValidation.method, gene1, gene2, gene3))
