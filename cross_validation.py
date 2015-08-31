@@ -30,7 +30,8 @@ class CrossValidation(object):
         self.NNParamScales = {"node_num" : (5, 50), "learning_rate" : (0.01, 0.1)} 
         self.RFParamScales = {"n_estimators" : (101, 3001), "max_features" : (2, 30)}
         self.windowSizeScales = (1, 19)
-        self.geneScale=geneScale
+        self.geneScale = geneScale
+        self.log = {}
 
     def create_folded_dataset(self, window_size):
         positive_dataset, negative_dataset = feature.create_dataset(self.bindingResidueData, self.pssmData, window_size)
@@ -77,6 +78,17 @@ class CrossValidation(object):
             #fp.write("{} {} {} {}\n".format(gene1, gene2, gene3, mean_AUC))
             fp.write("{}\t{}\t{}\t{}\n".format(gene1, gene2, gene3, mean_AUC))
 
+    def add_log(self, gene1, gene2, gene3, mean_AUC):
+        self.log[(gene1, gene2, gene3)] = mean_AUC
+
+    def check_log(self, gene1, gene2, gene3):
+        if (gene1, gene2, gene3) in self.log:
+            return True
+        return False
+
+    def get_mean_AUC_from_log(self, gene1, gene2, gene3):
+        return self.log.get(gene1, gene2, gene3)
+
     def eval_func(self, chromosome):
         if len(chromosome) != 3:
             raise ValueError("len(chromosome) is must be 3 [{}]".format(len(chromosome)))
@@ -89,6 +101,8 @@ class CrossValidation(object):
 
     def neuralNetwork_eval_func(self, chromosome):
         node_num, learning_rate, window_size = self.decode_chromosome(chromosome)
+        if check_log(node_num, learning_rate, window_size):
+            return get_mean_AUC_from_log(node_num, learning_rate, window_size)
         folded_dataset = self.create_folded_dataset(window_size)
         indim = 21 * (2 * window_size + 1)
         mean_AUC = 0
@@ -104,10 +118,13 @@ class CrossValidation(object):
             mean_AUC += validate.calculate_AUC(decision_values, test_labels)
         mean_AUC /= self.fold
         self.write_log(node_num, learning_rate, window_size, mean_AUC)
+        self.add_log(node_num, learning_rate, window_size, mean_AUC)
         return mean_AUC
 
     def randomForest_eval_func(self, chromosome):
         n_estimators, max_features, window_size = self.decode_chromosome(chromosome)
+        if check_log(n_estimators, max_features, window_size):
+            return get_mean_AUC_from_log(n_estimators, max_features, window_size)
         folded_dataset = self.create_folded_dataset(window_size)
         indim = 21 * (2 * window_size + 1)
         mean_AUC = 0
@@ -120,10 +137,13 @@ class CrossValidation(object):
             mean_AUC += validate.calculate_AUC(decision_values, test_labels)
         mean_AUC /= self.fold
         self.write_log(n_estimators, max_features, window_size, mean_AUC)
+        self.add_log(n_estimators, max_features, window_size, mean_AUC)
         return mean_AUC
 
     def SVM_eval_func(self, chromosome):
         cost, gamma, window_size = self.decode_chromosome(chromosome)
+        if check_log(cost, gamma, window_size):
+            return get_mean_AUC_from_log(cost, gamma, window_size)
         folded_dataset = self.create_folded_dataset(window_size)
         indim = 21 * (2 * window_size + 1)
         mean_AUC = 0
@@ -135,4 +155,5 @@ class CrossValidation(object):
             mean_AUC += validate.calculate_AUC(decision_values, test_labels)
         mean_AUC /= self.fold
         self.write_log(cost, gamma, window_size, mean_AUC)
+        self.add_log(cost, gamma, window_size, mean_AUC)
         return mean_AUC
