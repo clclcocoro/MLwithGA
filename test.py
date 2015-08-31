@@ -221,6 +221,42 @@ class TestFeature(unittest.TestCase):
             for j, ele in enumerate(negative_dataset[index[i]]):
                 self.assertEqual(ele, correct_negative[i][j])
 
+        window_size = 20
+        positive_dataset, negative_dataset = create_positive_and_negative_dataset(window_size)
+        self.assertEqual(len(positive_dataset), 6)
+        self.assertEqual(len(negative_dataset), 24)
+        correct_positive = [
+                    [1 if i != 0 and i % 21 == 0 for i in xrange(440)]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    [0]*20              +[1]
+                    +[0]*20             +[1]
+                    +[1]+[-1]*19        +[0]
+                    +[-1]+[1]+[-1]*18   +[0]
+                    +[-1]*2+[1]+[-1]*17 +[0],
+
+                ]
+        for i, ele in enumerate(positive_dataset[1]):
+            self.assertEqual(ele, correct_positive[i])
+
 
 class TestDataset(unittest.TestCase):
 
