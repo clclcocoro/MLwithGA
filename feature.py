@@ -148,7 +148,7 @@ def get_garbage_index_set(bindRecord, sequence_length):
     garbage = set()
     for i in bindRecord:
         for j in xrange(i-4, i+5):
-            if j >= 0 and j < sequence_length - 1:
+            if j >= 0 and j <= sequence_length - 1:
                 garbage.add(j)
     return garbage
 
@@ -172,7 +172,7 @@ def create_dataset(bindingResidueData, pssmData, window_size):
         pssm = pssmData.get_PSSMRecord(uniprotURI)
         feature_vectors = create_feature_vectors(pssm, window_size)
         bindRecord = bindingResidueData.get_bindRecord(uniprotURI)
-        garbage_index_set = get_garbage_index_set(bindRecord, len(pssm))
+        garbage_index_set = get_garbage_index_set(bindRecord, len(pssm.get_PSSM()))
         positive_data, negative_data = create_training_data(bindRecord, feature_vectors, garbage_index_set)
         positive_dataset += positive_data
         negative_dataset += negative_data

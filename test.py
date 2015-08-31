@@ -86,7 +86,7 @@ class TestFeature(unittest.TestCase):
         window_size = 1
         positive_dataset, negative_dataset = create_positive_and_negative_dataset(window_size)
         self.assertEqual(len(positive_dataset), 6)
-        self.assertEqual(len(negative_dataset), 24)
+        self.assertEqual(len(negative_dataset), 8)
         correct_positive = [
                     [0]*20              +[1]
                     +[1]+[-1]*19        +[0]
@@ -116,13 +116,13 @@ class TestFeature(unittest.TestCase):
             for j, ele in enumerate(positive_dataset[i]):
                 self.assertEqual(ele, correct_positive[i][j])
         correct_negative = [
-                    [-1]*2+[1]+[-1]*17  +[0]
-                    +[-1]*3+[1]+[-1]*16 +[0]
-                    +[-1]*4+[1]+[-1]*15 +[0], # AAAAAA 3
+                    [-1]*6+[1]+[-1]*13  +[0]
+                    +[-1]*7+[1]+[-1]*12 +[0]
+                    +[-1]*8+[1]+[-1]*11 +[0], # AAAAAA 7
 
-                    [-1]*3+[1]+[-1]*16  +[0]
-                    +[-1]*4+[1]+[-1]*15 +[0]
-                    +[-1]*5+[1]+[-1]*14 +[0], # AAAAAA 4
+                    [-1]*7+[1]+[-1]*12  +[0]
+                    +[-1]*8+[1]+[-1]*11 +[0]
+                    +[-1]*9+[1]+[-1]*10 +[0], # AAAAAA 8
                                             
                     [-1]*8+[1]+[-1]*11  +[0]
                     +[-1]*9+[1]+[-1]*10  +[0]
@@ -131,20 +131,16 @@ class TestFeature(unittest.TestCase):
                     [0]*20              +[1]
                     +[2]+[-2]*19        +[0]
                     +[-2]+[2]+[-2]*18   +[0], # BBBBBB 0
-                                            
-                    [3]+[-3]*19         +[0]
-                    +[-3]+[3]+[-3]*18   +[0]
-                    +[-3]*2+[3]+[-3]*17 +[0]  # CCCCCC 1
                 ]
-        index = [0, 1, 6, 7, 17]
-        for i in xrange(5):
+        index = [0, 1, 2, 3]
+        for i in xrange(4):
             for j, ele in enumerate(negative_dataset[index[i]]):
                 self.assertEqual(ele, correct_negative[i][j])
 
         window_size = 2
         positive_dataset, negative_dataset = create_positive_and_negative_dataset(window_size)
         self.assertEqual(len(positive_dataset), 6)
-        self.assertEqual(len(negative_dataset), 24)
+        self.assertEqual(len(negative_dataset), 8)
         correct_positive = [
                     [0]*20              +[1]
                     +[0]*20             +[1]
@@ -186,17 +182,17 @@ class TestFeature(unittest.TestCase):
             for j, ele in enumerate(positive_dataset[i]):
                 self.assertEqual(ele, correct_positive[i][j])
         correct_negative = [
-                    [-1]+[1]+[-1]*18    +[0]
-                    +[-1]*2+[1]+[-1]*17 +[0]
-                    +[-1]*3+[1]+[-1]*16 +[0]
-                    +[-1]*4+[1]+[-1]*15 +[0]
-                    +[-1]*5+[1]+[-1]*14 +[0], # AAAAAA 3
+                    [-1]*5+[1]+[-1]*14  +[0]
+                    +[-1]*6+[1]+[-1]*13 +[0]
+                    +[-1]*7+[1]+[-1]*12 +[0]
+                    +[-1]*8+[1]+[-1]*11 +[0]
+                    +[-1]*9+[1]+[-1]*10 +[0], # AAAAAA 7
 
-                    [-1]*2+[1]+[-1]*17  +[0]
-                    +[-1]*3+[1]+[-1]*16 +[0]
-                    +[-1]*4+[1]+[-1]*15 +[0]
-                    +[-1]*5+[1]+[-1]*14 +[0]
-                    +[-1]*6+[1]+[-1]*13 +[0], # AAAAAA 4
+                    [-1]*6+[1]+[-1]*13  +[0]
+                    +[-1]*7+[1]+[-1]*12 +[0]
+                    +[-1]*8+[1]+[-1]*11 +[0]
+                    +[-1]*9+[1]+[-1]*10 +[0]
+                    +[0]*20             +[1], # AAAAAA 8
                                             
                     [-1]*7+[1]+[-1]*12  +[0]
                     +[-1]*8+[1]+[-1]*11 +[0]
@@ -209,22 +205,16 @@ class TestFeature(unittest.TestCase):
                     +[2]+[-2]*19        +[0]
                     +[-2]+[2]+[-2]*18   +[0]
                     +[-2]*2+[2]+[-2]*17 +[0], # BBBBBB 0
-                                            
-                    [0]*20              +[1]
-                    +[3]+[-3]*19        +[0]
-                    +[-3]+[3]+[-3]*18   +[0]
-                    +[-3]*2+[3]+[-3]*17 +[0]  
-                    +[-3]*3+[3]+[-3]*16 +[0]  # CCCCCC 1
                 ]
-        index = [0, 1, 6, 7, 17]
-        for i in xrange(5):
+        index = [0, 1, 2, 3]
+        for i in xrange(4):
             for j, ele in enumerate(negative_dataset[index[i]]):
                 self.assertEqual(ele, correct_negative[i][j])
 
         window_size = 20
         positive_dataset, negative_dataset = create_positive_and_negative_dataset(window_size)
         self.assertEqual(len(positive_dataset), 6)
-        self.assertEqual(len(negative_dataset), 24)
+        self.assertEqual(len(negative_dataset), 8)
         correct_positive = [1 if i != 0 and (i+1) % 21 == 0 else 0 for i in xrange(21*20)] + [1 if i == j else -1 for i in xrange(10) for j in xrange(21)] + [1 if i != 0 and (i+1) % 21 == 0 else 0 for i in xrange(21*11)]
         for i in xrange(10):
             correct_positive[420+21*i+20] = 0
@@ -239,17 +229,21 @@ class TestDataset(unittest.TestCase):
         positive_dataset, negative_dataset = create_positive_and_negative_dataset(window_size)
         foldedDataset = dataset.FoldedDataset(positive_dataset, negative_dataset)
         test_labels, test_dataset, train_labels, train_dataset = foldedDataset.get_test_and_training_dataset(0)
-        self.assertEqual(len(test_labels), 5)
-        self.assertEqual(len(train_labels), 13)
+        self.assertEqual(len(test_labels), 4)
+        self.assertEqual(len(train_labels), 10)
 
         test_labels, test_dataset, train_labels, train_dataset = foldedDataset.get_test_and_training_dataset(1)
-        self.assertEqual(len(test_labels), 4)
-        self.assertEqual(len(train_labels), 14)
+        self.assertEqual(len(test_labels), 3)
+        self.assertEqual(len(train_labels), 11)
 
-        for i in xrange(2, 5):
+        test_labels, test_dataset, train_labels, train_dataset = foldedDataset.get_test_and_training_dataset(2)
+        self.assertEqual(len(test_labels), 3)
+        self.assertEqual(len(train_labels), 11)
+
+        for i in xrange(3, 5):
             test_labels, test_dataset, train_labels, train_dataset = foldedDataset.get_test_and_training_dataset(i)
-            self.assertEqual(len(test_labels), 3)
-            self.assertEqual(len(train_labels), 15)
+            self.assertEqual(len(test_labels), 2)
+            self.assertEqual(len(train_labels), 12)
 
     def test_folding(self):
         window_size = 1
