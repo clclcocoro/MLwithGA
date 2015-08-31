@@ -4,7 +4,7 @@
 
 
 Usage:
-  genetic_algorithm.py -m <method> -b <binding_residue_file> -p <pssms_file> -o <output_file>
+  genetic_algorithm.py -m <method> -b <binding_residue_file> -p <pssms_file> -l <log_file> -o <output_file>
   genetic_algorithm.py (-h | --help)
   calculateAUC_from_blastout.py --version
 
@@ -32,9 +32,9 @@ def run_ga(cross_validation, rangemin=0, rangemax=10):
     genome.evaluator.set(cross_validation.eval_func)
     ga = GSimpleGA.GSimpleGA(genome)
     ga.selector.set(Selectors.GRouletteWheel)
-    ga.setGenerations(3)
-    ga.setPopulationSize(25)
-    ga.setMutationRate(0.05)
+    ga.setGenerations(30) # 3
+    ga.setPopulationSize(20) # 25
+    ga.setMutationRate(0.2) # 0.05
     ga.setCrossoverRate(0.8)
     ga.evolve(freq_stats=1)
 
@@ -44,16 +44,19 @@ def run_ga(cross_validation, rangemin=0, rangemax=10):
 
 if __name__ == "__main__":
     arguments = docopt(__doc__)
-    method = arguments['method']
-    bindres_file = arguments['binding_residue_file']
-    pssms_file = arguments['pssms_file']
-    output_file = arguments['output']
-    crossValidation = cross_validation.CrossValidation(bindres_file, pssms_file, method)
+    method = arguments['<method>']
+    bindres_file = arguments['<binding_residue_file>']
+    pssms_file = arguments['<pssms_file>']
+    log_file = arguments['<log_file>']
+    output_file = arguments['<output_file>']
+    crossValidation = cross_validation.CrossValidation(bindres_file, pssms_file, log_file, method)
     best_chromosome = run_ga(crossValidation)
     with open(output_file, "w") as fp:
         if crossValidation.method == "neuralNetwork":
             fp.write("#method\tnode_num\tlearning_rate\twindow_size\n")
         elif crossValidation.method == "randomForest":
             fp.write("#method\tn_estimators\tmax_features\twindow_size\n")
-        gene1, gene2, gene3 = cross_validation.decode_chromosome(best_chromosome)
+        elif crossValidation.method == "SVM":
+            fp.write("#method\tcost\tgamma\twindow_size\n")
+        gene1, gene2, gene3 = crossValidation.decode_chromosome(best_chromosome)
         fp.write("{}\t{}\t{}\t{}".format(crossValidation.method, gene1, gene2, gene3))

@@ -1,0 +1,2 @@
+#method	cost	gamma	window_size
+SVM	4	4	1
