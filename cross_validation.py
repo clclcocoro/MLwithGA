@@ -73,21 +73,21 @@ class CrossValidation(object):
             window_size = self.window_size_scaling(chromosome[2])
             return cost, gamma, window_size
 
-    def write_log(self, gene1, gene2, gene3, mean_AUC):
+    def write_log(self, gene1, gene2, gene3, mean_AUC, mean_decision_value, mean_mcc):
         with open(self.log_file, 'a') as fp:
             #fp.write("{} {} {} {}\n".format(gene1, gene2, gene3, mean_AUC))
-            fp.write("{}\t{}\t{}\t{}\n".format(gene1, gene2, gene3, mean_AUC))
+            fp.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(gene1, gene2, gene3, mean_AUC, mean_decision_value, mean_mcc))
 
-    def add_log(self, gene1, gene2, gene3, mean_AUC):
-        self.log[(gene1, gene2, gene3)] = mean_AUC
+    def add_log(self, gene1, gene2, gene3, mean_AUC, mean_decision_value, mean_mcc):
+        self.log[(gene1, gene2, gene3)] = (mean_AUC, mean_decision_value, mean_mcc)
 
     def check_log(self, gene1, gene2, gene3):
         if (gene1, gene2, gene3) in self.log:
             return True
         return False
 
-    def get_mean_AUC_from_log(self, gene1, gene2, gene3):
-        return self.log.get(gene1, gene2, gene3)
+    def get_means_from_log(self, gene1, gene2, gene3):
+        return self.log.get((gene1, gene2, gene3))
 
     def eval_func(self, chromosome):
         if len(chromosome) != 3:
@@ -101,11 +101,13 @@ class CrossValidation(object):
 
     def neuralNetwork_eval_func(self, chromosome):
         node_num, learning_rate, window_size = self.decode_chromosome(chromosome)
-        if check_log(node_num, learning_rate, window_size):
-            return get_mean_AUC_from_log(node_num, learning_rate, window_size)
+        if self.check_log(node_num, learning_rate, window_size):
+            return self.get_means_from_log(node_num, learning_rate, window_size)[0]
         folded_dataset = self.create_folded_dataset(window_size)
         indim = 21 * (2 * window_size + 1)
         mean_AUC = 0
+        mean_decision_value = 0
+        mean_mcc = 0
         for test_fold in xrange(self.fold):
             test_labels, test_dataset, train_labels, train_dataset = folded_dataset.get_test_and_training_dataset(test_fold)
             ds = SupervisedDataSet(indim, 1)
@@ -115,45 +117,66 @@ class CrossValidation(object):
             trainer = BackpropTrainer(net, ds, learningrate=learning_rate)
             trainer.trainUntilConvergence(maxEpochs=self.maxEpochs_for_trainer)
             decision_values = [net.activate(test_dataset[i]) for i in xrange(len(test_labels))]
-            mean_AUC += validate.calculate_AUC(decision_values, test_labels)
+            decision_values = map(lambda x: x[0], decision_values)
+            AUC, decision_value_and_max_mcc = validate.calculate_AUC(decision_values, test_labels)
+            mean_AUC += AUC
+            mean_decision_value += decision_value_and_max_mcc[0]
+            mean_mcc += decision_value_and_max_mcc[1]
         mean_AUC /= self.fold
-        self.write_log(node_num, learning_rate, window_size, mean_AUC)
-        self.add_log(node_num, learning_rate, window_size, mean_AUC)
+        mean_decision_value /= self.fold
+        mean_mcc /= self.fold
+        self.write_log(node_num, learning_rate, window_size, mean_AUC, mean_decision_value, mean_mcc)
+        self.add_log(node_num, learning_rate, window_size, mean_AUC, mean_decision_value, mean_mcc)
         return mean_AUC
 
     def randomForest_eval_func(self, chromosome):
         n_estimators, max_features, window_size = self.decode_chromosome(chromosome)
-        if check_log(n_estimators, max_features, window_size):
-            return get_mean_AUC_from_log(n_estimators, max_features, window_size)
+        if self.check_log(n_estimators, max_features, window_size):
+            return self.get_means_from_log(n_estimators, max_features, window_size)[0]
         folded_dataset = self.create_folded_dataset(window_size)
         indim = 21 * (2 * window_size + 1)
         mean_AUC = 0
+        mean_decision_value = 0
+        mean_mcc = 0
         for test_fold in xrange(self.fold):
             test_labels, test_dataset, train_labels, train_dataset = folded_dataset.get_test_and_training_dataset(test_fold)
             clf = RandomForestClassifier(n_estimators=n_estimators, max_features=max_features)
             clf.fit(train_dataset, train_labels)
             probas = clf.predict_proba(test_dataset)
             decision_values = map(lambda x: x[1], probas) # Probability of being binding residue
-            mean_AUC += validate.calculate_AUC(decision_values, test_labels)
+            AUC, decision_value_and_max_mcc = validate.calculate_AUC(decision_values, test_labels)
+            mean_AUC += AUC
+            mean_decision_value += decision_value_and_max_mcc[0]
+            mean_mcc += decision_value_and_max_mcc[1]
         mean_AUC /= self.fold
-        self.write_log(n_estimators, max_features, window_size, mean_AUC)
-        self.add_log(n_estimators, max_features, window_size, mean_AUC)
+        mean_decision_value /= self.fold
+        mean_mcc /= self.fold
+        self.write_log(n_estimators, max_features, window_size, mean_AUC, mean_decision_value, mean_mcc)
+        self.add_log(n_estimators, max_features, window_size, mean_AUC, mean_decision_value, mean_mcc)
         return mean_AUC
 
     def SVM_eval_func(self, chromosome):
         cost, gamma, window_size = self.decode_chromosome(chromosome)
-        if check_log(cost, gamma, window_size):
-            return get_mean_AUC_from_log(cost, gamma, window_size)
+        if self.check_log(cost, gamma, window_size):
+            return self.get_means_from_log(cost, gamma, window_size)[0]
         folded_dataset = self.create_folded_dataset(window_size)
         indim = 21 * (2 * window_size + 1)
         mean_AUC = 0
+        mean_decision_value = 0
+        mean_mcc = 0
         for test_fold in xrange(self.fold):
             test_labels, test_dataset, train_labels, train_dataset = folded_dataset.get_test_and_training_dataset(test_fold)
             clf = svm.SVC(C=cost, gamma=gamma, class_weight='auto')
             clf.fit(train_dataset, train_labels)
             decision_values = clf.decision_function(test_dataset)
-            mean_AUC += validate.calculate_AUC(decision_values, test_labels)
+            decision_values = map(lambda x: x[0], decision_values)
+            AUC, decision_value_and_max_mcc = validate.calculate_AUC(decision_values, test_labels)
+            mean_AUC += AUC
+            mean_decision_value += decision_value_and_max_mcc[0]
+            mean_mcc += decision_value_and_max_mcc[1]
         mean_AUC /= self.fold
-        self.write_log(cost, gamma, window_size, mean_AUC)
-        self.add_log(cost, gamma, window_size, mean_AUC)
+        mean_decision_value /= self.fold
+        mean_mcc /= self.fold
+        self.write_log(cost, gamma, window_size, mean_AUC, mean_decision_value, mean_mcc)
+        self.add_log(cost, gamma, window_size, mean_AUC, mean_decision_value, mean_mcc)
         return mean_AUC

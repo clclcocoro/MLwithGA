@@ -6,10 +6,10 @@
 Usage:
   genetic_algorithm.py -m <method> -b <binding_residue_file> -p <pssms_file> -l <log_file> -o <output_file>
   genetic_algorithm.py (-h | --help)
-  calculateAUC_from_blastout.py --version
+  genetic_algorithm.py --version
 
 Options:
-  -m          machine learning method ("neuralNetwork" or "randomForest"). 
+  -m          machine learning method ("neuralNetwork" or "randomForest" or "SVM"). 
   -b          binding residue file.
   -p          pssms file.
   -o          output file.
@@ -32,9 +32,9 @@ def run_ga(cross_validation, rangemin=0, rangemax=10):
     genome.evaluator.set(cross_validation.eval_func)
     ga = GSimpleGA.GSimpleGA(genome)
     ga.selector.set(Selectors.GRouletteWheel)
-    ga.setGenerations(30) # 3
-    ga.setPopulationSize(20) # 25
-    ga.setMutationRate(0.2) # 0.05
+    ga.setGenerations(5) # 3
+    ga.setPopulationSize(10) # 25
+    ga.setMutationRate(0.05) # 0.05
     ga.setCrossoverRate(0.8)
     ga.evolve(freq_stats=1)
 
@@ -53,10 +53,12 @@ if __name__ == "__main__":
     best_chromosome = run_ga(crossValidation)
     with open(output_file, "w") as fp:
         if crossValidation.method == "neuralNetwork":
-            fp.write("#method\tnode_num\tlearning_rate\twindow_size\n")
+            fp.write("#method\tnode_num\tlearning_rate\twindow_size\tdecision_value\n")
         elif crossValidation.method == "randomForest":
-            fp.write("#method\tn_estimators\tmax_features\twindow_size\n")
+            fp.write("#method\tn_estimators\tmax_features\twindow_size\tdecision_value\n")
         elif crossValidation.method == "SVM":
-            fp.write("#method\tcost\tgamma\twindow_size\n")
+            fp.write("#method\tcost\tgamma\twindow_size\tdecision_value\n")
         gene1, gene2, gene3 = crossValidation.decode_chromosome(best_chromosome)
-        fp.write("{}\t{}\t{}\t{}".format(crossValidation.method, gene1, gene2, gene3))
+        means = crossValidation.get_means_from_log(gene1, gene2, gene3)
+        decision_value = means[1]
+        fp.write("{}\t{}\t{}\t{}\t{}".format(crossValidation.method, gene1, gene2, gene3, decision_value))

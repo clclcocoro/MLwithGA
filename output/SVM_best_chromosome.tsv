@@ -1,0 +1,2 @@
+#method	cost	gamma	window_size	decision_value
+SVM	16	16	1	-1.0

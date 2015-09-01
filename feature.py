@@ -96,6 +96,20 @@ class BindingResidueData(object):
         return self.uniprotURIs
 
 
+def parse_pssms_file(pssms_file):
+    pssmData = PSSMData()
+    with open(pssms_file) as fp:
+        raw_pssm = ""
+        for i, line in enumerate(fp):
+            if i != 0 and re.match(">", line):
+                pssmData.add_PSSMRecord(PSSM(raw_pssm))
+                raw_pssm = line
+            else:
+                raw_pssm += line
+        pssmData.add_PSSMRecord(PSSM(raw_pssm))
+    return pssmData
+
+
 def parse_record_files(bindres_file, pssms_file):
     with open(bindres_file) as fp:
         raw_bindres = ''.join(fp.readlines())
@@ -144,23 +158,30 @@ def create_feature_vectors(pssm, window_size):
 # Only 5-25th (former or latter) residues from binding residue are used as negative dataset.
 # So, 1-4th (former or latter) residues from binding residue must be eliminated from dataset.
 
-def get_garbage_index_set(bindRecord, sequence_length):
-    garbage = set()
+def get_negative_data_index_set(bindRecord, sequence_length):
+    negative_data_index = set()
+    for i in bindRecord:
+        for j in xrange(i-25, i-4):
+            if j >= 0:
+                negative_data_index.add(j)
+        for j in xrange(i+5, i+26):
+            if j <= sequence_length - 1:
+                negative_data_index.add(j)
     for i in bindRecord:
         for j in xrange(i-4, i+5):
-            if j >= 0 and j <= sequence_length - 1:
-                garbage.add(j)
-    return garbage
+            if j in negative_data_index:
+                negative_data_index.remove(j)
+    return negative_data_index
 
 
-def create_training_data(bindRecord, feature_vectors, garbage_index_set):
+def create_training_data(bindRecord, feature_vectors, negative_data_index_set):
     positive_data = []
     negative_data = []
     for i, feature_vector in enumerate(feature_vectors):
         if i in bindRecord:
             positive_data.append(feature_vector)
         else:
-            if not i in garbage_index_set:
+            if i in negative_data_index_set:
                 negative_data.append(feature_vector)
     return positive_data, negative_data
 
@@ -172,8 +193,8 @@ def create_dataset(bindingResidueData, pssmData, window_size):
         pssm = pssmData.get_PSSMRecord(uniprotURI)
         feature_vectors = create_feature_vectors(pssm, window_size)
         bindRecord = bindingResidueData.get_bindRecord(uniprotURI)
-        garbage_index_set = get_garbage_index_set(bindRecord, len(pssm.get_PSSM()))
-        positive_data, negative_data = create_training_data(bindRecord, feature_vectors, garbage_index_set)
+        negative_data_index_set = get_negative_data_index_set(bindRecord, len(pssm.get_PSSM()))
+        positive_data, negative_data = create_training_data(bindRecord, feature_vectors, negative_data_index_set)
         positive_dataset += positive_data
         negative_dataset += negative_data
     return positive_dataset, negative_dataset

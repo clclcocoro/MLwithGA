@@ -1,3 +1,3 @@
-http://purl.uniprot.org/uniprot/AAAAAA 1 6 11 16 21 26 31 36 41 46 51 56 61 66 71 76 81 86 91 96
-http://purl.uniprot.org/uniprot/BBBBBB 2 7 12 17 22 27 32 37 42 47 52 57 62 67 72 77 82 87 92 97
-http://purl.uniprot.org/uniprot/CCCCCC 3 8 13 18 23 28 33 38 43 48 53 58 63 68 73 78 83 88 93 98
+http://purl.uniprot.org/uniprot/AAAAAA 1 21 41 61 81
+http://purl.uniprot.org/uniprot/BBBBBB 2 22 42 62 82
+http://purl.uniprot.org/uniprot/CCCCCC 3 23 43 63 83
