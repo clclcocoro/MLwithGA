@@ -33,7 +33,7 @@ def run_ga(cross_validation, rangemin=0, rangemax=10):
     ga = GSimpleGA.GSimpleGA(genome)
     ga.selector.set(Selectors.GRouletteWheel)
     ga.setGenerations(5) # 3
-    ga.setPopulationSize(10) # 25
+    ga.setPopulationSize(25) # 25
     ga.setMutationRate(0.05) # 0.05
     ga.setCrossoverRate(0.8)
     ga.evolve(freq_stats=1)

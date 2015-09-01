@@ -1,5 +1,15 @@
 #!/bin/bash
 
+function remove_if_exists {
+  if [ -f $1 ]; then
+    rm $1
+  fi
+}
+remove_if_exists "output/log.txt"
+remove_if_exists "output/neuralNetwork_prediction_output.txt"
+remove_if_exists "output/SVM_prediction_output.txt"
+remove_if_exists "output/randomForest_prediction_output.txt"
+
 python genetic_algorithm.py -m 'neuralNetwork' -b test/bindingData.txt -p test/pssms.txt \
                             -l output/log.txt -o output/neuralNetwork_best_chromosome.tsv
 python create_model.py -i output/neuralNetwork_best_chromosome.tsv -b test/bindingData.txt \
