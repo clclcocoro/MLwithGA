@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+
+import sys
+sys.path.append("..")
+
 import unittest
 import validate
 import feature
@@ -19,42 +24,42 @@ class TestValidate(unittest.TestCase):
     def test_calculate_AUC(self):
         decision_values = [-1, -0.5, -0.1,  0.1, 0.5, 1]
         correct_labels = [0, 0, 0, 1, 1, 1]
-        AUC = validate.calculate_AUC(decision_values, correct_labels)
+        AUC, mcc = validate.calculate_AUC(decision_values, correct_labels)
         self.assertEqual(AUC, 1.0)
 
         decision_values = [-1, 0.5, -0.1,  0.1, -0.5, 1]
         correct_labels = [0, 1, 0, 1, 0, 1]
-        AUC = validate.calculate_AUC(decision_values, correct_labels)
+        AUC, mcc = validate.calculate_AUC(decision_values, correct_labels)
         self.assertEqual(AUC, 1.0)
 
         decision_values = [1.0]*6
         correct_labels = [0, 1, 0, 1, 0, 1]
-        AUC = validate.calculate_AUC(decision_values, correct_labels)
+        AUC, mcc = validate.calculate_AUC(decision_values, correct_labels)
         self.assertEqual(AUC, 0.5)
 
         decision_values = [-1, -0.5, 0.5, 1]
         correct_labels = [0, 1, 0, 1]
-        AUC = validate.calculate_AUC(decision_values, correct_labels)
+        AUC, mcc = validate.calculate_AUC(decision_values, correct_labels)
         self.assertEqual(AUC, 0.75)
 
         decision_values = [1.0] * 2 + [-1.0] * 8 + [1.0] * 2 + [0.5] * 8
         correct_labels = [0] * 10 + [1] * 10
-        AUC = validate.calculate_AUC(decision_values, correct_labels)
+        AUC, mcc = validate.calculate_AUC(decision_values, correct_labels)
         self.assertEqual(round(AUC*(10**5))/(10**5), 0.82)
 
         decision_values = [-1.0] * 8 + [0.0] * 2 + [0.0] * 2 + [0.5] * 8
         correct_labels = [0] * 10 + [1] * 10
-        AUC = validate.calculate_AUC(decision_values, correct_labels)
+        AUC, mcc = validate.calculate_AUC(decision_values, correct_labels)
         self.assertEqual(round(AUC*(10**5))/(10**5), 0.98)
 
         decision_values = [-1.0] * 8 + [0.2] * 2 + [0.1]*3 +[0.2]*2 + [0.5]*5
         correct_labels = [0] * 10 + [1] * 10
-        AUC = validate.calculate_AUC(decision_values, correct_labels)
+        AUC, mcc = validate.calculate_AUC(decision_values, correct_labels)
         self.assertEqual(round(AUC*(10**5))/(10**5), 0.92)
 
         decision_values = [-1.0]*6 + [0.0]*2+ [0.2]*2 + [0.0]*2+ [0.1]*1 +[0.2]*2 + [0.5]*5
         correct_labels = [0] * 10 + [1] * 10
-        AUC = validate.calculate_AUC(decision_values, correct_labels)
+        AUC, mcc = validate.calculate_AUC(decision_values, correct_labels)
         self.assertEqual(round(AUC*(10**5))/(10**5), 0.9)
 
 

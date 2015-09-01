@@ -5,6 +5,8 @@ function remove_if_exists {
     rm $1
   fi
 }
+
+cd ".."
 remove_if_exists "output/log.txt"
 remove_if_exists "output/neuralNetwork_prediction_output.txt"
 remove_if_exists "output/SVM_prediction_output.txt"
