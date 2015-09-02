@@ -6,27 +6,58 @@ function remove_if_exists {
   fi
 }
 
-cd ".."
-remove_if_exists "output/log.txt"
-remove_if_exists "output/neuralNetwork_prediction_output.txt"
-remove_if_exists "output/SVM_prediction_output.txt"
-remove_if_exists "output/randomForest_prediction_output.txt"
 
-python genetic_algorithm.py -m 'neuralNetwork' -b test/bindingData.txt -p test/pssms.txt \
-                            -l output/log.txt -o output/neuralNetwork_best_chromosome.tsv
-python create_model.py -i output/neuralNetwork_best_chromosome.tsv -b test/bindingData.txt \
-                        -p test/pssms.txt -o output/neuralNetwork.pkl
-python predict.py -i output/neuralNetwork_best_chromosome.tsv -p test/pssms.txt \
-                    -m output/neuralNetwork.pkl -o output/neuralNetwork_prediction_output.txt
-python genetic_algorithm.py -m 'SVM' -b test/bindingData.txt -p test/pssms.txt \
-                            -l output/log.txt -o output/SVM_best_chromosome.tsv
-python create_model.py -i output/SVM_best_chromosome.tsv -b test/bindingData.txt \
-                        -p test/pssms.txt -o output/SVM.pkl
-python predict.py -i output/SVM_best_chromosome.tsv -p test/pssms.txt \
-                    -m output/SVM.pkl -o output/SVM_prediction_output.txt
-python genetic_algorithm.py -m 'randomForest' -b test/bindingData.txt -p test/pssms.txt \
-                            -l output/log.txt -o output/randomForest_best_chromosome.tsv
-python create_model.py -i output/randomForest_best_chromosome.tsv -b test/bindingData.txt \
-                        -p test/pssms.txt -o output/randomForest.pkl
-python predict.py -i output/randomForest_best_chromosome.tsv -p test/pssms.txt \
-                    -m output/randomForest.pkl -o output/randomForest_prediction_output.txt
+if [ $1 ]; then if [ $1 == "-h" ]; then
+  echo "Usage: test_whole_run.sh "
+  echo "       test_whole_run.sh --randomscore"
+  exit
+  fi
+fi
+
+TESTDATA_DIR="test"
+OUTPUT_DIR="output"
+cd ".."
+remove_if_exists "$OUTPUT_DIR/log.txt"
+remove_if_exists "$OUTPUT_DIR/neuralNetwork_prediction_output.txt"
+remove_if_exists "$OUTPUT_DIR/SVM_prediction_output.txt"
+remove_if_exists "$OUTPUT_DIR/randomForest_prediction_output.txt"
+
+BINDFILE="$TESTDATA_DIR/bindingData.txt"
+if [ $1 ]; then if [ $1 == "--randomscore" ]; then
+    PSSMFILE="$TESTDATA_DIR/pssms_random_score.txt"
+  fi
+else
+  PSSMFILE="$TESTDATA_DIR/pssms_fixed_score.txt"
+fi
+echo $PSSMFILE
+LOGFILE="$OUTPUT_DIR/log.txt"
+
+SVM_CHROMOSOME_TSV="$OUTPUT_DIR/SVM_best_chromosome.tsv"
+SVM_PKL="$OUTPUT_DIR/SVM.pkl"
+SVM_PRED_OUTPUT="$OUTPUT_DIR/SVM_prediction_output.txt"
+time python genetic_algorithm.py -m 'SVM' -b $BINDFILE -p $PSSMFILE \
+                            -l $LOGFILE -o $SVM_CHROMOSOME_TSV
+python create_model.py -i $SVM_CHROMOSOME_TSV -b $BINDFILE \
+                        -p $PSSMFILE -o $SVM_PKL
+python predict.py -i $SVM_CHROMOSOME_TSV -p $PSSMFILE \
+                    -m $SVM_PKL -o $SVM_PRED_OUTPUT
+
+NN_CHROMOSOME_TSV="$OUTPUT_DIR/neuralNetwork_best_chromosome.tsv"
+NN_PKL="$OUTPUT_DIR/neuralNetwork.pkl"
+NN_PRED_OUTPUT="$OUTPUT_DIR/neuralNetwork_prediction_output.txt"
+time python genetic_algorithm.py -m 'neuralNetwork' -b $BINDFILE -p $PSSMFILE \
+                            -l $LOGFILE -o $NN_CHROMOSOME_TSV
+python create_model.py -i $NN_CHROMOSOME_TSV -b $BINDFILE \
+                        -p $PSSMFILE -o $NN_PKL
+python predict.py -i $NN_CHROMOSOME_TSV -p $PSSMFILE \
+                    -m $NN_PKL -o $NN_PRED_OUTPUT
+
+RF_CHROMOSOME_TSV="$OUTPUT_DIR/randomForest_best_chromosome.tsv"
+RF_PKL="$OUTPUT_DIR/randomForest.pkl"
+RF_PRED_OUTPUT="$OUTPUT_DIR/randomForest_prediction_output.txt"
+time python genetic_algorithm.py -m 'randomForest' -b $BINDFILE -p $PSSMFILE \
+                            -l $LOGFILE -o $RF_CHROMOSOME_TSV
+python create_model.py -i $RF_CHROMOSOME_TSV -b $BINDFILE \
+                        -p $PSSMFILE -o $RF_PKL
+python predict.py -i $RF_CHROMOSOME_TSV -p $PSSMFILE \
+                    -m $RF_PKL -o $RF_PRED_OUTPUT

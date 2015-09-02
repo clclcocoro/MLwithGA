@@ -1,2 +1,2 @@
 #method	cost	gamma	window_size	decision_value
-SVM	4	0.0009765625	12	0.594258196449
+SVM	0.0625	0.0009765625	1	0.771075864937

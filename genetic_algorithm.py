@@ -32,6 +32,7 @@ def run_ga(cross_validation, rangemin=0, rangemax=10):
     genome.evaluator.set(cross_validation.eval_func)
     ga = GSimpleGA.GSimpleGA(genome)
     ga.selector.set(Selectors.GRouletteWheel)
+    ga.terminationCriteria.set(GSimpleGA.ConvergenceCriteria)
     ga.setGenerations(5) # 3
     ga.setPopulationSize(25) # 25
     ga.setMutationRate(0.05) # 0.05
