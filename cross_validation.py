@@ -112,7 +112,7 @@ class CrossValidation(object):
         for test_fold in xrange(self.fold):
             test_labels, test_dataset, train_labels, train_dataset = folded_dataset.get_test_and_training_dataset(test_fold)
             if len(test_labels) + len(train_labels) > 1000:
-                sample_size_over_two_thousand_flag = True
+                sample_size_over_thousand_flag = True
             ds = SupervisedDataSet(indim, 1)
             for i in xrange(len(train_labels)):
                 ds.appendLinked(train_dataset[i], [train_labels[i]])
@@ -125,9 +125,9 @@ class CrossValidation(object):
             mean_AUC += AUC
             mean_decision_value += decision_value_and_max_mcc[0]
             mean_mcc += decision_value_and_max_mcc[1]
-            if sample_size_over_two_thousand_flag:
+            if sample_size_over_thousand_flag:
                 break
-        if not sample_size_over_two_thousand_flag:
+        if not sample_size_over_thousand_flag:
             mean_AUC /= self.fold
             mean_decision_value /= self.fold
             mean_mcc /= self.fold
@@ -148,7 +148,7 @@ class CrossValidation(object):
         for test_fold in xrange(self.fold):
             test_labels, test_dataset, train_labels, train_dataset = folded_dataset.get_test_and_training_dataset(test_fold)
             if len(test_labels) + len(train_labels) > 1000:
-                sample_size_over_two_thousand_flag = True
+                sample_size_over_thousand_flag = True
             clf = RandomForestClassifier(n_estimators=n_estimators, max_features=max_features)
             clf.fit(train_dataset, train_labels)
             probas = clf.predict_proba(test_dataset)
@@ -157,9 +157,9 @@ class CrossValidation(object):
             mean_AUC += AUC
             mean_decision_value += decision_value_and_max_mcc[0]
             mean_mcc += decision_value_and_max_mcc[1]
-            if sample_size_over_two_thousand_flag:
+            if sample_size_over_thousand_flag:
                 break
-        if not sample_size_over_two_thousand_flag:
+        if not sample_size_over_thousand_flag:
             mean_AUC /= self.fold
             mean_decision_value /= self.fold
             mean_mcc /= self.fold
@@ -180,7 +180,7 @@ class CrossValidation(object):
         for test_fold in xrange(self.fold):
             test_labels, test_dataset, train_labels, train_dataset = folded_dataset.get_test_and_training_dataset(test_fold)
             if len(test_labels) + len(train_labels) > 1000:
-                sample_size_over_two_thousand_flag = True
+                sample_size_over_thousand_flag = True
             clf = svm.SVC(C=cost, gamma=gamma, class_weight='auto')
             clf.fit(train_dataset, train_labels)
             decision_values = clf.decision_function(test_dataset)
@@ -189,9 +189,9 @@ class CrossValidation(object):
             mean_AUC += AUC
             mean_decision_value += decision_value_and_max_mcc[0]
             mean_mcc += decision_value_and_max_mcc[1]
-            if sample_size_over_two_thousand_flag:
+            if sample_size_over_thousand_flag:
                 break
-        if not sample_size_over_two_thousand_flag:
+        if not sample_size_over_thousand_flag:
             mean_AUC /= self.fold
             mean_decision_value /= self.fold
             mean_mcc /= self.fold
