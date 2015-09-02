@@ -53,7 +53,8 @@ def predict_with_RF_classifier(clf, my_decision_value, test_dataset):
 def predict_with_SVM_classifier(clf, my_decision_value, test_dataset):
     results = {}
     decision_values = clf.decision_function(test_dataset)
-    decision_values = map(lambda x: x[0], decision_values)
+    if type(decision_values[0]) is list:
+        decision_values = map(lambda x: x[0], decision_values)
     predicted_labels = [1 if decision_value >= my_decision_value else 0 for decision_value in decision_values]
     results['label'] = predicted_labels
     results['decision_value'] = decision_values

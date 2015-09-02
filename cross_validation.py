@@ -28,7 +28,7 @@ class CrossValidation(object):
         self.maxEpochs_for_trainer=maxEpochs_for_trainer
         self.SVMParamScales = {"cost" : (-10, 10), "gamma" : (-10, 5)} 
         self.NNParamScales = {"node_num" : (5, 50), "learning_rate" : (0.01, 0.1)} 
-        self.RFParamScales = {"n_estimators" : (101, 3001), "max_features" : (2, 30)}
+        self.RFParamScales = {"n_estimators" : (101, 1001), "max_features" : (2, 30)}
         self.windowSizeScales = (1, 19)
         self.geneScale = geneScale
         self.log = {}
@@ -184,7 +184,8 @@ class CrossValidation(object):
             clf = svm.SVC(C=cost, gamma=gamma, class_weight='auto')
             clf.fit(train_dataset, train_labels)
             decision_values = clf.decision_function(test_dataset)
-            decision_values = map(lambda x: x[0], decision_values)
+            if type(decision_values[0]) is list:
+                decision_values = map(lambda x: x[0], decision_values)
             AUC, decision_value_and_max_mcc = validate.calculate_AUC(decision_values, test_labels)
             mean_AUC += AUC
             mean_decision_value += decision_value_and_max_mcc[0]
