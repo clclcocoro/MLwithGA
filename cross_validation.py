@@ -3,6 +3,7 @@
 from pybrain.tools.shortcuts     import buildNetwork
 from pybrain.supervised.trainers import BackpropTrainer
 from pybrain.datasets            import SupervisedDataSet
+from pybrain.structure.modules   import SigmoidLayer
 from sklearn.ensemble            import RandomForestClassifier 
 from sklearn import svm
 import numpy
@@ -15,7 +16,7 @@ class CrossValidation(object):
     """
     Gene Scale in GA has to be (0, n).  n is greater than 0.
     """
-    def __init__(self, bindres_file, pssms_file, log_file, method, fold=5, undersampling=True, shuffle=True, maxEpochs_for_trainer=5, geneScale=(0, 10)):
+    def __init__(self, bindres_file, pssms_file, log_file, method, fold=5, undersampling=True, shuffle=True, maxEpochs_for_trainer=10, geneScale=(0, 10)):
         if geneScale[0] != 0 or geneScale[1] <= geneScale[0]:
             raise ValueError("Gene Scale in GA has to be (0, n).  n is greater than 0.")
         if method != "neuralNetwork" and method != "randomForest" and method != "SVM":
@@ -117,7 +118,7 @@ class CrossValidation(object):
             ds = SupervisedDataSet(indim, 1)
             for i in xrange(len(train_labels)):
                 ds.appendLinked(train_dataset[i], [train_labels[i]])
-            net = buildNetwork(indim, node_num, 1)
+            net = buildNetwork(indim, node_num, 1, outclass=SigmoidLayer, bias=True)
             trainer = BackpropTrainer(net, ds, learningrate=learning_rate)
             trainer.trainUntilConvergence(maxEpochs=self.maxEpochs_for_trainer)
             decision_values = [net.activate(test_dataset[i]) for i in xrange(len(test_labels))]

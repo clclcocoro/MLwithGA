@@ -23,6 +23,7 @@ from docopt import docopt
 from pybrain.tools.shortcuts     import buildNetwork
 from pybrain.supervised.trainers import BackpropTrainer
 from pybrain.datasets            import SupervisedDataSet
+from pybrain.structure.modules   import SigmoidLayer
 from sklearn.ensemble            import RandomForestClassifier 
 from sklearn import svm
 import feature
@@ -45,7 +46,7 @@ def create_NN_classifier(genes, positive_dataset, negative_dataset):
     ds = SupervisedDataSet(indim, 1)
     for i in xrange(len(train_labels)):
         ds.appendLinked(train_dataset[i], [train_labels[i]])
-    net = buildNetwork(indim, node_num, 1)
+    net = buildNetwork(indim, node_num, 1, outclass=SigmoidLayer, bias=True)
     trainer = BackpropTrainer(net, ds, learningrate=learning_rate)
     trainer.trainUntilConvergence(maxEpochs=maxEpochs_for_trainer)
     return net

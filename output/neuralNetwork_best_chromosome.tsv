@@ -1,2 +1,2 @@
 #method	node_num	learning_rate	window_size	decision_value
-neuralNetwork	5	0.046	1	0.545129728059
+neuralNetwork	28	0.064	8	0.314267765707
