@@ -7,8 +7,6 @@ import copy
 class FoldedDataset(object):
 
     def __init__(self, positive_dataset, negative_dataset, fold=5, undersampling=True, shuffle=True):
-        self.original_positive_dataset = copy.deepcopy(positive_dataset)
-        self.original_negative_dataset = copy.deepcopy(negative_dataset)
         self.fold = fold
         positive_size = len(positive_dataset)
         negative_size = len(negative_dataset)
@@ -45,22 +43,28 @@ class FoldedDataset(object):
     def get_folded_negative_dataset(self):
         return self.folded_negative_dataset
 
-    def get_original_positive_dataset(self):
-        return self.original_positive_dataset
-
-    def get_original_negative_dataset(self):
-        return self.original_negative_dataset
-
-    def get_test_and_training_dataset(self, test_fold):
+    def get_test_and_training_dataset(self, test_fold, undersampling_training_dataset=True):
         if test_fold < 0 or self.fold <= test_fold:
             raise ValueError("test_fold [{}] must be between 0 and self.fold-1 [{}]".format(test_fold, self.fold-1))
         test_positive_size = len(self.folded_positive_dataset[test_fold])
         test_negative_size = len(self.folded_negative_dataset[test_fold])
         test_labels = [1] * test_positive_size + [0] * test_negative_size
         test_dataset = self.folded_positive_dataset[test_fold] + self.folded_negative_dataset[test_fold]
-        train_labels = [1] * (self.positive_size - test_positive_size) + [0] * (self.negative_size - test_negative_size)
-        train_dataset = []
+        positive_train_labels = [1] * (self.positive_size - test_positive_size)
+        negative_train_labels = [0] * (self.negative_size - test_negative_size)
+        positive_train_dataset = []
+        negative_train_dataset = []
         for i in xrange(self.fold):
             if i != test_fold:
-                train_dataset += self.folded_positive_dataset[i]+self.folded_negative_dataset[i]
+                positive_train_dataset += self.folded_positive_dataset[i]
+                negative_train_dataset += self.folded_negative_dataset[i]
+        if undersampling_training_dataset:
+            if self.positive_size - test_positive_size > 1500:
+                positive_train_labels = [1] * 1500
+                positive_train_dataset = positive_train_dataset[:1500]
+            if self.negative_size - test_negative_size > 1500:
+                negative_train_labels = [0] * 1500
+                negative_train_dataset = negative_train_dataset[:1500]
+        train_labels = positive_train_labels + negative_train_labels
+        train_dataset = positive_train_dataset + negative_train_dataset
         return test_labels, test_dataset, train_labels, train_dataset

@@ -25,37 +25,47 @@ from pybrain.supervised.trainers import BackpropTrainer
 from pybrain.datasets            import SupervisedDataSet
 from sklearn.ensemble            import RandomForestClassifier 
 from sklearn import svm
+import numpy
 import feature
 import dataset
 import common
 
 
-def predict_with_NN_classifier(net, my_decision_value, test_dataset):
+def predict_with_NN_classifier(net, my_decision_value, test_dataset, based_on_max_mcc_decision_value=False):
     results = {}
     decision_values = [net.activate(test_dataset[i]) for i in xrange(len(test_dataset))]
     decision_values = map(lambda x: x[0], decision_values)
-    predicted_labels = map(lambda x: 1 if x >= my_decision_value else 0, decision_values)
+    if based_on_max_mcc_decision_value:
+        predicted_labels = map(lambda x: 1 if x >= my_decision_value else 0, decision_values)
+    else:
+        predicted_labels = map(lambda x: 1 if x >= 0.5 else 0, decision_values)
     results['label'] = predicted_labels
     results['decision_value'] = decision_values
     return results
 
 
-def predict_with_RF_classifier(clf, my_decision_value, test_dataset):
+def predict_with_RF_classifier(clf, my_decision_value, test_dataset, based_on_max_mcc_decision_value=False):
     results = {}
     probas = clf.predict_proba(test_dataset)
     decision_values = map(lambda x: x[1], probas) # Probability of being binding residue
-    predicted_labels = [1 if decision_value >= my_decision_value else 0 for decision_value in decision_values]
+    if based_on_max_mcc_decision_value:
+        predicted_labels = [1 if decision_value >= my_decision_value else 0 for decision_value in decision_values]
+    else:
+        predicted_labels = [1 if decision_value >= 0.5 else 0 for decision_value in decision_values]
     results['label'] = predicted_labels
     results['decision_value'] = decision_values
     return results
 
 
-def predict_with_SVM_classifier(clf, my_decision_value, test_dataset):
+def predict_with_SVM_classifier(clf, my_decision_value, test_dataset, based_on_max_mcc_decision_value=False):
     results = {}
     decision_values = clf.decision_function(test_dataset)
-    if type(decision_values[0]) is list:
+    if type(decision_values[0]) is list or type(decision_values[0]) is numpy.ndarray:
         decision_values = map(lambda x: x[0], decision_values)
-    predicted_labels = [1 if decision_value >= my_decision_value else 0 for decision_value in decision_values]
+    if based_on_max_mcc_decision_value:
+        predicted_labels = [1 if decision_value >= my_decision_value else 0 for decision_value in decision_values]
+    else:
+        predicted_labels = clf.predict(test_dataset)
     results['label'] = predicted_labels
     results['decision_value'] = decision_values
     return results

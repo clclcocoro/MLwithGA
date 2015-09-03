@@ -5,6 +5,7 @@ from pybrain.supervised.trainers import BackpropTrainer
 from pybrain.datasets            import SupervisedDataSet
 from sklearn.ensemble            import RandomForestClassifier 
 from sklearn import svm
+import numpy
 import feature
 import dataset
 import validate
@@ -14,7 +15,7 @@ class CrossValidation(object):
     """
     Gene Scale in GA has to be (0, n).  n is greater than 0.
     """
-    def __init__(self, bindres_file, pssms_file, log_file, method, fold=5, undersampling=True, shuffle=True, maxEpochs_for_trainer=10, geneScale=(0, 10)):
+    def __init__(self, bindres_file, pssms_file, log_file, method, fold=5, undersampling=True, shuffle=True, maxEpochs_for_trainer=5, geneScale=(0, 10)):
         if geneScale[0] != 0 or geneScale[1] <= geneScale[0]:
             raise ValueError("Gene Scale in GA has to be (0, n).  n is greater than 0.")
         if method != "neuralNetwork" and method != "randomForest" and method != "SVM":
@@ -184,7 +185,7 @@ class CrossValidation(object):
             clf = svm.SVC(C=cost, gamma=gamma, class_weight='auto')
             clf.fit(train_dataset, train_labels)
             decision_values = clf.decision_function(test_dataset)
-            if type(decision_values[0]) is list:
+            if type(decision_values[0]) is list or type(decision_values[0]) is numpy.ndarray:
                 decision_values = map(lambda x: x[0], decision_values)
             AUC, decision_value_and_max_mcc = validate.calculate_AUC(decision_values, test_labels)
             mean_AUC += AUC
