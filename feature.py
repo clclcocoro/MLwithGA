@@ -141,17 +141,23 @@ def create_feature_vectors(pssm, window_size):
         feature_vector = []
         p = i - window_size 
         if p < 0:
-            feature_vector += [1 if j != 0 and (j+1) % 21 == 0 else 0 for j in xrange(21*(window_size-i))]
+            feature_vector += [0 if j != 0 and (j+1) % 21 == 0 else 0 for j in xrange(21*(window_size-i))]
             p = 0
         if i + window_size <= seqlen - 1:
             while p <= i + window_size:
-                feature_vector += m[p]+[0]
+                if p == 0 or p == seqlen - 1:
+                    feature_vector += m[p]+[1]
+                else:
+                    feature_vector += m[p]+[0]
                 p += 1
         else:
             while p <= seqlen - 1:
-                feature_vector += m[p]+[0]
+                if p == 0 or p == seqlen - 1:
+                    feature_vector += m[p]+[1]
+                else:
+                    feature_vector += m[p]+[0]
                 p += 1
-            feature_vector += [1 if j != 0 and (j+1) % 21 == 0 else 0 for j in xrange(21*((i+window_size)-(seqlen-1)))]
+            feature_vector += [0 if j != 0 and (j+1) % 21 == 0 else 0 for j in xrange(21*((i+window_size)-(seqlen-1)))]
         feature_vectors.append(feature_vector)
     return feature_vectors
 
