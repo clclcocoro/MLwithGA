@@ -1,2 +1,2 @@
 #method	n_estimators	max_features	window_size	decision_value
-randomForest	1001	27	5	0.0
+randomForest	1001	16	19	0.0491508491508

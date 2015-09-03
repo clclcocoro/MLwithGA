@@ -9,7 +9,7 @@ from sklearn import svm
 import numpy
 import feature
 import dataset
-import validate
+import validate_performance
 
 class CrossValidation(object):
 
@@ -123,7 +123,7 @@ class CrossValidation(object):
             trainer.trainUntilConvergence(maxEpochs=self.maxEpochs_for_trainer)
             decision_values = [net.activate(test_dataset[i]) for i in xrange(len(test_labels))]
             decision_values = map(lambda x: x[0], decision_values)
-            AUC, decision_value_and_max_mcc = validate.calculate_AUC(decision_values, test_labels)
+            AUC, decision_value_and_max_mcc = validate_performance.calculate_AUC(decision_values, test_labels)
             mean_AUC += AUC
             mean_decision_value += decision_value_and_max_mcc[0]
             mean_mcc += decision_value_and_max_mcc[1]
@@ -155,7 +155,7 @@ class CrossValidation(object):
             clf.fit(train_dataset, train_labels)
             probas = clf.predict_proba(test_dataset)
             decision_values = map(lambda x: x[1], probas) # Probability of being binding residue
-            AUC, decision_value_and_max_mcc = validate.calculate_AUC(decision_values, test_labels)
+            AUC, decision_value_and_max_mcc = validate_performance.calculate_AUC(decision_values, test_labels)
             mean_AUC += AUC
             mean_decision_value += decision_value_and_max_mcc[0]
             mean_mcc += decision_value_and_max_mcc[1]
@@ -188,7 +188,7 @@ class CrossValidation(object):
             decision_values = clf.decision_function(test_dataset)
             if type(decision_values[0]) is list or type(decision_values[0]) is numpy.ndarray:
                 decision_values = map(lambda x: x[0], decision_values)
-            AUC, decision_value_and_max_mcc = validate.calculate_AUC(decision_values, test_labels)
+            AUC, decision_value_and_max_mcc = validate_performance.calculate_AUC(decision_values, test_labels)
             mean_AUC += AUC
             mean_decision_value += decision_value_and_max_mcc[0]
             mean_mcc += decision_value_and_max_mcc[1]
