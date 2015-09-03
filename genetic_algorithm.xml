@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<tool id="fit_model_with_GA" name="Fit Prediction Model using Genetic Algorithm">
+  <description></description>
+  
+  <inputs>
+    <param name="pssm" format="txt" type="data" label="PSSM Data" />
+    <param name="answer" format="txt" type="data" label="ANSWER Data" />
+    <param name="method" type="select" label="Machine Learning Method">
+        <option value="SVM">Support Vector Machine</option>
+        <option value="neuralNetwork">Neural Network</option>
+        <option value="randomForest">Random Forest</option>
+    </param>
+  </inputs>
+
+  <outputs>
+    <data format="txt" name="parameter" />
+    <!--<data format="txt" name="ga_log" />-->
+    <!--<data format="txt" name="raw_log" />-->
+  </outputs>
+
+  <command interpreter="python">genetic_algorithm.py -m '$method' -b '$answer' -p '$pssm' -l '/tmp/${method}_raw_log.txt' -o '$parameter' > 'tmp/${method}_ga.log'</command>
+
+  <help>
+  </help>
+</tool>
