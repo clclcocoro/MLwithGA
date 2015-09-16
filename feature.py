@@ -3,7 +3,7 @@
 import re
 import math
 
-"A  R  N  D  C  Q  E  G  H  I  L  K  M  F  P  S  T  W  Y  V"
+# A  R  N  D  C  Q  E  G  H  I  L  K  M  F  P  S  T  W  Y  V
 background_amino_acid_probs = [
                                   0.0810512118609,
                                   0.0502183364566,
