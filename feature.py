@@ -1,35 +1,66 @@
 #!/usr/bin/env python
 
 import re
+import math
 
+"A  R  N  D  C  Q  E  G  H  I  L  K  M  F  P  S  T  W  Y  V"
+background_amino_acid_probs = [
+                                  0.0810512118609,
+                                  0.0502183364566,
+                                  0.0418741266489,
+                                  0.05769080733,
+                                  0.0149635478654,
+                                  0.0373551656399,
+                                  0.0670304444727,
+                                  0.0757691885639,
+                                  0.0230438890847,
+                                  0.0572854899551,
+                                  0.0902823837905,
+                                  0.0592869162833,
+                                  0.0218862925131,
+                                  0.0398720660213,
+                                  0.0456505343867,
+                                  0.0618346859065,
+                                  0.0552265538065,
+                                  0.0135913466326,
+                                  0.0350181948809,
+                                  0.0710688179004
+                              ]
 
 class PSSM(object):
 
     """
     PSSM object created from followng string
+    20 scores and 20 frequencies.
 
     ">http://purl.uniprot.org/uniprot/Q9Y3D8\n
-    1\t0\t3...\t-4\n
-    1\t0\t3...\t-4\n
-    1\t0\t3...\t-4\n
+    1\t0\t3...\t-4\t0\t10\t0...\t0\n
+    1\t0\t3...\t-4\t30\t0\t0...\t0\n
+    1\t0\t3...\t-4\t20\t0\t0...\t0\n
     ...
-    1\t0\t3...\t-4\n"
+    1\t0\t3...\t-4\t40\t0\t0...\t0\n"
     """
 
     def __init__(self, raw_pssm):
-        self.uniprotURI, self.pssm = self.parse_raw_pssm(raw_pssm)
+        self.uniprotURI, self.pssm, self.freq = self.parse_raw_pssm(raw_pssm)
 
     def parse_raw_pssm(self, raw_pssm):
         parts = raw_pssm.split('\n')
         uniprotURI = parts[0][1:]
         pssm = []
+        freq = []
         for part in parts[1:]:
             if len(part) != 0:
-                pssm.append(map(int, part.split('\t')))
-        return uniprotURI, pssm
+                score_freq = part.split('\t')
+                pssm.append(map(int, score_freq[:20]))
+                freq.append(map(int, score_freq[20:]))
+        return uniprotURI, pssm, freq
 
     def get_PSSM(self):
         return self.pssm
+
+    def get_freq(self):
+        return self.freq
 
     def get_uniprotURI(self):
         return self.uniprotURI
@@ -127,21 +158,53 @@ def parse_record_files(bindres_file, pssms_file):
     return bindingResidueData, pssmData
 
 
-def create_feature_vectors(pssm, window_size):
+def jensen_shennon_divergence(aa_freq):
+    epsilon = 10**-10
+    modified_aa_freq = map(lambda x: x+epsilon, aa_freq)
+    normalization_term = sum(modified_aa_freq)
+    aa_probs = map(lambda x: x/normalization_term, modified_aa_freq)
+    JSD = 0
+    for i in xrange(20):
+        M = 0.5 * (aa_probs[i] + background_amino_acid_probs[i])
+        JSD += 0.5 * aa_probs[i] * math.log(aa_probs[i]/M, 2)
+        JSD += 0.5 * background_amino_acid_probs[i] * math.log(background_amino_acid_probs[i]/M, 2)
+    return JSD
+
+
+def create_feature_vectors(pssm, window_size, conservation=False):
     """
-        terminal spacer, PSSM 
+        if conservation is False
+        terminal spacer, PSSM
         1 0 0 0 0 0 0 0 0 0 0 ... 0
         1 0 0 0 0 0 0 0 0 0 0 ... 0
         0 -1 -2 -1 3 ...         -3
+
+        if conservation is True 
+        terminal spacer, PSSM
+        1 0 0 0 0 0 0 0 0 0 0 ... 0
+        1 0 0 0 0 0 0 0 0 0 0 ... 0
+        0 -1 -2 -1 3 ...         -3
+        
+        AND 
+
+        conservation with Jensen-Shannon divergence in window
+        0 0 0.4 0.5 0.8 ... 0 0
+
     """
     feature_vectors = []
     m = pssm.get_PSSM()
+    if conservation:
+        freq = pssm.get_freq()
     seqlen = len(m)
     for i in xrange(seqlen):
         feature_vector = []
+        if conservation:
+            conservation_vector = []
         p = i - window_size 
         if p < 0:
             feature_vector += [0 if j != 0 and (j+1) % 21 == 0 else 0 for j in xrange(21*(window_size-i))]
+            if conservation:
+                conservation_vector += [0] * window_size-i
             p = 0
         if i + window_size <= seqlen - 1:
             while p <= i + window_size:
@@ -149,6 +212,8 @@ def create_feature_vectors(pssm, window_size):
                     feature_vector += m[p]+[1]
                 else:
                     feature_vector += m[p]+[0]
+                if conservation:
+                    conservation_vector += [jensen_shennon_divergence(freq[p])]
                 p += 1
         else:
             while p <= seqlen - 1:
@@ -156,9 +221,16 @@ def create_feature_vectors(pssm, window_size):
                     feature_vector += m[p]+[1]
                 else:
                     feature_vector += m[p]+[0]
+                if conservation:
+                    conservation_vector += [jensen_shennon_divergence(freq[p])]
                 p += 1
             feature_vector += [0 if j != 0 and (j+1) % 21 == 0 else 0 for j in xrange(21*((i+window_size)-(seqlen-1)))]
-        feature_vectors.append(feature_vector)
+            if conservation:
+                conservation_vector += [0] * (i+window_size)-(seqlen-1)
+        if conservation:
+            feature_vectors.append(feature_vector + conservation_vector)
+        else:
+            feature_vectors.append(feature_vector)
     return feature_vectors
 
 # Only 5-25th (former or latter) residues from binding residue are used as negative dataset.
@@ -192,12 +264,12 @@ def create_training_data(bindRecord, feature_vectors, negative_data_index_set):
     return positive_data, negative_data
 
 
-def create_dataset(bindingResidueData, pssmData, window_size):
+def create_dataset(bindingResidueData, pssmData, window_size, conservation=False):
     positive_dataset = []
     negative_dataset = []
     for uniprotURI in bindingResidueData.get_uniprotURIs():
         pssm = pssmData.get_PSSMRecord(uniprotURI)
-        feature_vectors = create_feature_vectors(pssm, window_size)
+        feature_vectors = create_feature_vectors(pssm, window_size, conservation=conservation)
         bindRecord = bindingResidueData.get_bindRecord(uniprotURI)
         negative_data_index_set = get_negative_data_index_set(bindRecord, len(pssm.get_PSSM()))
         positive_data, negative_data = create_training_data(bindRecord, feature_vectors, negative_data_index_set)
