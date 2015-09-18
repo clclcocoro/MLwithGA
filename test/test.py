@@ -95,8 +95,21 @@ class TestFeature(unittest.TestCase):
         JSD = feature.jensen_shennon_divergence([1 if i == 0 else 0 for i in xrange(20)], background_probs=bg)
         epsilon = 10**-5
         self.assertTrue(JSD > 1-epsilon)
+        JSD = feature.jensen_shennon_divergence([5 for i in xrange(20)], background_probs=feature.background_amino_acid_probs)
+        self.assertEqual(JSD, 0.0375597100129578)
 
-    def test_create_datset(self):
+    def test_create_feature_vectors(self):
+        create_positive_and_negative_dataset(1, 10)
+        pssms_file = "/tmp/pssms.txt"
+        conservation = True
+        pssmData = feature.parse_pssms_file(pssms_file)
+        pssm = pssmData.get_PSSMRecord(pssmData.get_uniprotURIs()[0])
+        feature_vectors = feature.create_feature_vectors(pssm, 1, conservation=True)
+        self.assertEqual(66, len(feature_vectors[0]))
+        self.assertEqual(0, feature_vectors[0][-3])
+        self.assertEqual(0, feature_vectors[9][-1])
+
+    def test_create_dataset(self):
         window_size = 1
         positive_dataset, negative_dataset = create_positive_and_negative_dataset(window_size, 10)
         self.assertEqual(len(positive_dataset), 6)

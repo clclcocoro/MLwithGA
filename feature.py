@@ -163,7 +163,7 @@ def jensen_shennon_divergence(aa_freqs, background_probs=background_amino_acid_p
     modified_aa_freq = [aa_freq + epsilon if aa_freq == 0 else aa_freq for aa_freq in aa_freqs]
     modified_background_probs = [bg_prob + epsilon if bg_prob == 0 else bg_prob for bg_prob in background_probs]
     normalization_term = sum(modified_aa_freq)
-    aa_probs = map(lambda x: x/normalization_term, modified_aa_freq)
+    aa_probs = map(lambda x: x/float(normalization_term), modified_aa_freq)
     JSD = 0
     for i in xrange(20):
         M = 0.5 * (aa_probs[i] + modified_background_probs[i])
@@ -205,7 +205,7 @@ def create_feature_vectors(pssm, window_size, conservation=False):
         if p < 0:
             feature_vector += [0 if j != 0 and (j+1) % 21 == 0 else 0 for j in xrange(21*(window_size-i))]
             if conservation:
-                conservation_vector += [0] * window_size-i
+                conservation_vector += [0] * (window_size-i)
             p = 0
         if i + window_size <= seqlen - 1:
             while p <= i + window_size:
@@ -227,7 +227,7 @@ def create_feature_vectors(pssm, window_size, conservation=False):
                 p += 1
             feature_vector += [0 if j != 0 and (j+1) % 21 == 0 else 0 for j in xrange(21*((i+window_size)-(seqlen-1)))]
             if conservation:
-                conservation_vector += [0] * (i+window_size)-(seqlen-1)
+                conservation_vector += [0] * ((i+window_size)-(seqlen-1))
         if conservation:
             feature_vectors.append(feature_vector + conservation_vector)
         else:
