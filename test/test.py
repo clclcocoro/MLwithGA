@@ -72,13 +72,13 @@ def create_positive_and_negative_dataset(window_size, sequence_length):
             fp.write("http://purl.uniprot.org/uniprot/CCCCCC 7 2\n")
         with open(pssms_file, "w") as fp:
             fp.write(">http://purl.uniprot.org/uniprot/AAAAAA\n")
-            pssm = '\n'.join(map('\t'.join, [['1' if i == j else '-1' for i in xrange(20)] for j in xrange(sequence_length)]))
+            pssm = '\n'.join(map('\t'.join, [['1' if i == j else '-1' for i in xrange(20)]+['5' for l in xrange(20)] for j in xrange(sequence_length)]))
             fp.write(pssm+"\n")
             fp.write(">http://purl.uniprot.org/uniprot/BBBBBB\n")
-            pssm = '\n'.join(map('\t'.join, [['2' if i == j else '-2' for i in xrange(20)] for j in xrange(sequence_length)]))
+            pssm = '\n'.join(map('\t'.join, [['2' if i == j else '-2' for i in xrange(20)]+['5' for l in xrange(20)] for j in xrange(sequence_length)]))
             fp.write(pssm+"\n")
             fp.write(">http://purl.uniprot.org/uniprot/CCCCCC\n")
-            pssm = '\n'.join(map('\t'.join, [['3' if i == j else '-3' for i in xrange(20)] for j in xrange(sequence_length)]))
+            pssm = '\n'.join(map('\t'.join, [['3' if i == j else '-3' for i in xrange(20)]+['5' for l in xrange(20)] for j in xrange(sequence_length)]))
             fp.write(pssm+"\n")
         bindingResidueData, pssmData = feature.parse_record_files(bindres_file, pssms_file)
         positive_dataset, negative_dataset = feature.create_dataset(bindingResidueData, pssmData, window_size)
@@ -86,6 +86,15 @@ def create_positive_and_negative_dataset(window_size, sequence_length):
  
 
 class TestFeature(unittest.TestCase):
+
+    def test_jensen_shannon_divergence(self):
+        JSD = feature.jensen_shennon_divergence(feature.background_amino_acid_probs)
+        epsilon = 10**-10
+        self.assertTrue(JSD < epsilon)
+        bg = [1.0 if i == 1 else 0 for i in xrange(20)]
+        JSD = feature.jensen_shennon_divergence([1 if i == 0 else 0 for i in xrange(20)], background_probs=bg)
+        epsilon = 10**-5
+        self.assertTrue(JSD > 1-epsilon)
 
     def test_create_datset(self):
         window_size = 1

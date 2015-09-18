@@ -158,16 +158,17 @@ def parse_record_files(bindres_file, pssms_file):
     return bindingResidueData, pssmData
 
 
-def jensen_shennon_divergence(aa_freq):
+def jensen_shennon_divergence(aa_freqs, background_probs=background_amino_acid_probs):
     epsilon = 10**-10
-    modified_aa_freq = map(lambda x: x+epsilon, aa_freq)
+    modified_aa_freq = [aa_freq + epsilon if aa_freq == 0 else aa_freq for aa_freq in aa_freqs]
+    modified_background_probs = [bg_prob + epsilon if bg_prob == 0 else bg_prob for bg_prob in background_probs]
     normalization_term = sum(modified_aa_freq)
     aa_probs = map(lambda x: x/normalization_term, modified_aa_freq)
     JSD = 0
     for i in xrange(20):
-        M = 0.5 * (aa_probs[i] + background_amino_acid_probs[i])
+        M = 0.5 * (aa_probs[i] + modified_background_probs[i])
         JSD += 0.5 * aa_probs[i] * math.log(aa_probs[i]/M, 2)
-        JSD += 0.5 * background_amino_acid_probs[i] * math.log(background_amino_acid_probs[i]/M, 2)
+        JSD += 0.5 * modified_background_probs[i] * math.log(modified_background_probs[i]/M, 2)
     return JSD
 
 
